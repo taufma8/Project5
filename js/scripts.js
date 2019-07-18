@@ -1,72 +1,151 @@
 //Defining varibles
-const apiData = 'https://randomuser.me/api/?results=12&?inc=picture,name,email,location,cell,noinfo,dob';
+const apiData = 'https://randomuser.me/api/?results=12&nat=us&inc=picture,name,email,location,cell,noinfo,dob';
 // const btn = document.querySelector('button');
 
 // Make an AJAX request
 let people = [];
 fetch(apiData)
+    .then(checkStatus)
     .then(response => response.json())
-    .then(function(json) {
-        people = (json.results);
-// console.log(people.gender);
-//     .then(getProfiles);
-    console.log(people);
+    .catch(error => console.log('Looks like there was a problem', error))
+    .then(function (json) {
+        people = (json.results)
+        console.log(people);
 
-  //Gallery HTML
-    function galleryHTML () {
-        for (let i = 0; i < people.length; i++) {
-            const gallery = $('#gallery');
-            let galleryHTML = '';
-            galleryHTML +=
-            `<div class="card">
+        createGallery();
+
+        searchHTML();
+    });
+//checking to see if the fetch didn't have any issues
+function checkStatus(response) {
+    if (response.ok) {
+        return Promise.resolve(response);
+    } else {
+        return Promise.reject(new Error(response.statusText));
+    }
+}
+
+//Gallery HTML
+function createGallery() {
+    for (let i = 0; i < people.length; i++) {
+        const galleryDiv = $('#gallery');
+        let galleryHTML =
+        `<div class="card" index="${i}">
             <div class="card-img-container">
                 <img class="card-img" src=${people[i].picture.large} alt="profile picture">
             </div>
             <div class="card-info-container">
-            <h3 id="name" class="card-name cap">${people[i].name.first} ${people[i].name.last}</h3>
+                <h3 id="name" class="card-name cap">${people[i].name.first} ${people[i].name.last}</h3>
                 <p class="card-text">${people[i].email}</p>
                 <p class="card-text cap">${people[i].location.city}, ${people[i].location.state}</p>
             </div>
-            </div>`;
+        </div>`;
 
-            gallery.append(galleryHTML);
-        }
+        galleryDiv.append(galleryHTML);
     }
-    galleryHTML();
 
-    //Modal HTML
-    function modalHTML () {
-        for (let i = 0; i < people.length; i++) {
-            let modalHTML = '';
-            modalHTML +=
+    function iterativeSearch (element) {
+        while (!element.hasClass('card')) {
+            element = element.parent();
+        } 
+        return element;
+    }
+    
+    $('.card').on('click', function (event) {
+        $('.modal-container').show();
+        let clicked = iterativeSearch($(event.target)).attr('index');
+        console.log(clicked);
+        let chosenPerson = people[clicked];
+        createModal(chosenPerson);
+    });
+
+}
+
+
+// function recursiveSearch (element) {
+//     if (element.hasClass('card')) {
+//         return element;
+//     } else {
+//         return recursiveSearch(element.parent());
+//     }
+// }
+
+
+//Modal HTML
+function createModal(person) {
+    let options = { year: 'numeric', month: 'long', day: 'numeric' };
+    let modalHTML = 
             `<div class="modal-container">
             <div class="modal">
                 <button type="button" id="modal-close-btn" class="modal-close-btn"><strong>X</strong></button>
                 <div class="modal-info-container">
-                    <img class="modal-img" src=${people[i].picture.large}"https://placehold.it/125x125" alt="profile picture">
-                    <h3 id="name" class="modal-name cap">${people[i].name}name</h3>
-                    <p class="modal-text">${people[i].email}email</p>
-                    <p class="modal-text cap">${people[i].location.city}city</p>
+                    <img class="modal-img" src="${person.picture.large}" alt="profile picture">
+                    <h3 id="name" class="modal-name cap">${person.name.first} ${person.name.last}</h3>
+                    <p class="modal-text">${person.email}</p>
+                    <p class="modal-text cap">${person.location.city}</p>
                     <hr>
-                    <p class="modal-text">${people[i].cell}(555) 555-5555</p>
-                    <p class="modal-text">${people[i].location.street.city.state.postcode}123 Portland Ave., Portland, OR 97204</p>
-                    <p class="modal-text">Birthday: ${people[i].dob.date}10/21/2015</p>
+                    <p class="modal-text">${person.cell}</p>
+                    <p class="modal-text">${person.location.street}, ${person.location.city}, ${person.location.state} ${person.location.postcode}</p>
+                    <p class="modal-text">Birthday: ${(new Date(person.dob.date)).toLocaleDateString('en-US', options)}</p>
                 </div>
+                <div class="modal-btn-container">
+                <button type="button" id="modal-prev" class="modal-prev btn">Prev</button>
+                <button type="button" id="modal-next" class="modal-next btn">Next</button>
+            </div>
             </div>`;
-        }
-        gallery.append(modalHTML);
-    }
-    modalHTML();
+    $('.modal-container').remove();
+    $('body').append(modalHTML);
 
-    $('#modal-close-btn').on('change', function () {
-
+//close modal
+    $('#modal-close-btn').on('click', function () {
+        $('.modal-container').hide();
     });
 
-    $('.card-info-container').on('change', function () {
+    // $('.modal-container').on('click', function (event) {
+    //     if ($(event.target).className === 'modal-container') {
+    //       modalHTML.style.display = 'none';
+    //     }
+    // });
+}
 
-    });
+$('#modal-prev').on('click', function () {
+   createModal(index-1);
 });
 
+$('#modal-next').on('click', function () {
+    createModal(index-1);
+ });
+
+function searchHTML() {
+    let searchHTML =
+        `<form action="#" method="get">
+        <input type="search" id="search-input" class="search-input" placeholder="Search...">
+        <input type="submit" value="&#x1F50D;" id="search-submit" class="search-submit">
+        </form>`;
+        
+    $('.search-container').append(searchHTML);
+}
+
+$('#search-submit').on('submit', function () {
+    // Declare variables
+    var input, filter, ul, li, a, i, txtValue;
+    input = $('myInput');
+    filter = input.value.toUpperCase();
+    ul = $('ul');
+    li = $('li');
+    ul.append(li);
+
+    // Loop through all list items, and hide those who don't match the search query
+    for (let i = 0; i < li.length; i++) {
+        a = li[i];
+        txtValue = a.textContent;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            li[i].style.display = "";
+        } else {
+            li[i].style.display = "none";
+        }
+    }
+});
 // function getJSON(apiData) {
 //     const xhr = new XMLHttpRequest();
 //     xhr.open('GET', apiData);
@@ -78,7 +157,7 @@ fetch(apiData)
 //     };
 //     xhr.send();
 //   }
-  
+
 // getJSON(apiData);
 
 //   function getProfiles(json) {
