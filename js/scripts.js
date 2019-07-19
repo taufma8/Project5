@@ -187,23 +187,23 @@ function searchHTML() {
         <input type="search" id="search-input" class="search-input" placeholder="Search...">
         <input type="submit" value="&#x1F50D;" id="search-submit" class="search-submit">
         </form>`;
-        
-    $('.search-container').append(searchHTML);
+    }
+    // $('.search-container').append(searchHTML);
 
-    $('#search-submit').on('submit', function () {
-        // Declare variables
-        let input = $('#search-input').val();
-        input.toUpperCase();
+    // $('#search-submit').on('submit', function () {
+    //     // Declare variables
+    //     let input = $('#search-input').val();
+    //     input.toUpperCase();
 
-        checkLetter(letter) {
-            return people.indexOf(letter) >= 0;
-        }
+    //     checkLetter(letter) {
+    //         return people.indexOf(letter) >= 0;
+    //     }
 
-       if (people.checkLetter(input)) {
+    //    if (people.checkLetter(input)) {
 
-       } else {
+    //    } else {
 
-       }
+    //    }
         // let filterPeople = people.filter(person => person !== input);
         // if (filterPeople) {
         //     console.log('error');
@@ -216,9 +216,9 @@ function searchHTML() {
             // } else {
             //     return false;
         // }
-    });
-// });
-}
+//     });
+// // });
+
 
 // function getJSON(apiData) {
 //     const xhr = new XMLHttpRequest();
