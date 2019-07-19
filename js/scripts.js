@@ -1,10 +1,64 @@
 //Defining varibles
-const apiData = 'https://randomuser.me/api/?results=12&nat=us&inc=picture,name,email,location,cell,noinfo,dob';
-// const btn = document.querySelector('button');
+// const apiData = 'https://randomuser.me/api/?results=12&nat=us&inc=picture,name,email,location,cell,noinfo,dob';
 
+function stateAbbr(stateFullName) {
+    return stateList[stateFullName];
+  }
+  stateList = {
+    'arizona': 'AZ',
+    'alabama': 'AL',
+    'alaska': 'AK',
+    'arkansas': 'AR',
+    'california': 'CA',
+    'colorado': 'CO',
+    'connecticut': 'CT',
+    'delaware': 'DE',
+    'florida': 'FL',
+    'georgia': 'GA',
+    'hawaii': 'HI',
+    'idaho': 'ID',
+    'illinois': 'IL',
+    'indiana': 'IN',
+    'iowa': 'IA',
+    'kansas': 'KS',
+    'kentucky': 'KY',
+    'louisiana': 'LA',
+    'maine': 'ME',
+    'maryland': 'MD',
+    'massachusetts': 'MA',
+    'michigan': 'MI',
+    'minnesota': 'MN',
+    'mississippi': 'MS',
+    'missouri': 'MO',
+    'montana': 'MT',
+    'nebraska': 'NE',
+    'nevada': 'NV',
+    'new hampshire': 'NH',
+    'new jersey': 'NJ',
+    'new mexico': 'NM',
+    'new york': 'NY',
+    'north carolina': 'NC',
+    'north dakota': 'ND',
+    'ohio': 'OH',
+    'oklahoma': 'OK',
+    'oregon': 'OR',
+    'pennsylvania': 'PA',
+    'rhode island': 'RI',
+    'south carolina': 'SC',
+    'south dakota': 'SD',
+    'tennessee': 'TN',
+    'texas': 'TX',
+    'utah': 'UT',
+    'vermont': 'VT',
+    'virginia': 'VA',
+    'washington': 'WA',
+    'west virginia': 'WV',
+    'wisconsin': 'WI',
+    'wyoming': 'WY'
+  }
 // Make an AJAX request
 let people = [];
-fetch(apiData)
+fetch('https://randomuser.me/api/?results=12&nat=us&inc=picture,name,email,location,cell,noinfo,dob')
     .then(checkStatus)
     .then(response => response.json())
     .catch(error => console.log('Looks like there was a problem', error))
@@ -28,7 +82,7 @@ function checkStatus(response) {
 //Gallery HTML
 function createGallery() {
     for (let i = 0; i < people.length; i++) {
-        const galleryDiv = $('#gallery');
+        // const galleryDiv = $('#gallery');
         let galleryHTML =
         `<div class="card" index="${i}">
             <div class="card-img-container">
@@ -41,7 +95,7 @@ function createGallery() {
             </div>
         </div>`;
 
-        galleryDiv.append(galleryHTML);
+        $('#gallery').append(galleryHTML);
     }
 
     function iterativeSearch (element) {
@@ -56,10 +110,13 @@ function createGallery() {
         let clicked = iterativeSearch($(event.target)).attr('index');
         console.log(clicked);
         let chosenPerson = people[clicked];
-        createModal(chosenPerson);
+        createModal(chosenPerson, Number(clicked));
+        // console.log(chosenPerson);
+
     });
 
 }
+
 
 
 // function recursiveSearch (element) {
@@ -72,8 +129,8 @@ function createGallery() {
 
 
 //Modal HTML
-function createModal(person) {
-    let options = { year: 'numeric', month: 'long', day: 'numeric' };
+function createModal(person, index) {
+    let options = { date: 'short' };
     let modalHTML = 
             `<div class="modal-container">
             <div class="modal">
@@ -85,7 +142,7 @@ function createModal(person) {
                     <p class="modal-text cap">${person.location.city}</p>
                     <hr>
                     <p class="modal-text">${person.cell}</p>
-                    <p class="modal-text">${person.location.street}, ${person.location.city}, ${person.location.state} ${person.location.postcode}</p>
+                    <p class="modal-text cap">${person.location.street}, ${person.location.city}, ${stateAbbr(person.location.state)} ${person.location.postcode}</p>
                     <p class="modal-text">Birthday: ${(new Date(person.dob.date)).toLocaleDateString('en-US', options)}</p>
                 </div>
                 <div class="modal-btn-container">
@@ -101,20 +158,28 @@ function createModal(person) {
         $('.modal-container').hide();
     });
 
-    // $('.modal-container').on('click', function (event) {
-    //     if ($(event.target).className === 'modal-container') {
-    //       modalHTML.style.display = 'none';
-    //     }
-    // });
+    $('#modal-prev').on('click', function () {
+        let prev;
+        if (index == 0) {
+            prev = people.length - 1;
+        } else {
+            prev = index - 1;
+        }
+        let chosenPerson = people[prev];
+        createModal(chosenPerson, prev);
+    });
+
+    $('#modal-next').on('click', function () {
+        let next;
+        if (index == people.length - 1) {
+            next = 0
+        } else {
+            next = index + 1;
+        }
+        let chosenPerson = people[next];
+        createModal(chosenPerson, next);
+    });
 }
-
-$('#modal-prev').on('click', function () {
-   createModal(index-1);
-});
-
-$('#modal-next').on('click', function () {
-    createModal(index-1);
- });
 
 function searchHTML() {
     let searchHTML =
@@ -124,28 +189,37 @@ function searchHTML() {
         </form>`;
         
     $('.search-container').append(searchHTML);
+
+    $('#search-submit').on('submit', function () {
+        // Declare variables
+        let input = $('#search-input').val();
+        input.toUpperCase();
+
+        checkLetter(letter) {
+            return people.indexOf(letter) >= 0;
+        }
+
+       if (people.checkLetter(input)) {
+
+       } else {
+
+       }
+        // let filterPeople = people.filter(person => person !== input);
+        // if (filterPeople) {
+        //     console.log('error');
+        // } else {
+        //     $('.card')[i].show();
+        // }
+            // {
+            // if (person.name.first == input || person.name.last == input) {
+            //     return true;
+            // } else {
+            //     return false;
+        // }
+    });
+// });
 }
 
-$('#search-submit').on('submit', function () {
-    // Declare variables
-    var input, filter, ul, li, a, i, txtValue;
-    input = $('myInput');
-    filter = input.value.toUpperCase();
-    ul = $('ul');
-    li = $('li');
-    ul.append(li);
-
-    // Loop through all list items, and hide those who don't match the search query
-    for (let i = 0; i < li.length; i++) {
-        a = li[i];
-        txtValue = a.textContent;
-        if (txtValue.toUpperCase().indexOf(filter) > -1) {
-            li[i].style.display = "";
-        } else {
-            li[i].style.display = "none";
-        }
-    }
-});
 // function getJSON(apiData) {
 //     const xhr = new XMLHttpRequest();
 //     xhr.open('GET', apiData);
