@@ -94,7 +94,7 @@ header h1 {
     border: 1px  rgba(50, 50, 50, 0.3);
     transition: .4s ease-out;
     overflow: hidden;
-    background-color: coral;
+    background-color: salmon;
     border-width: round;
     border-radius: 15px/15px;
 }

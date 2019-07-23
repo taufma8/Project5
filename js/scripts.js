@@ -1,6 +1,4 @@
-//Defining varibles
-// const apiData = 'https://randomuser.me/api/?results=12&nat=us&inc=picture,name,email,location,cell,noinfo,dob';
-
+//In order to create 2 letter abbreviations for States, I created a function to provide to do that. I will use it later on in my Modal.
 function stateAbbr(stateFullName) {
     return stateList[stateFullName];
   }
@@ -56,7 +54,11 @@ function stateAbbr(stateFullName) {
     'wisconsin': 'WI',
     'wyoming': 'WY'
   }
-// Make an AJAX request
+// Fetching an API. I specified the aspects I need for every person.
+// Changing the results to json format.
+// Also, have an error if the fetch API request did not go through
+// Populate the people array with people and their information.
+// Called createGallery to show the gallery with the folks fetched.
 let people = [];
 fetch('https://randomuser.me/api/?results=12&nat=us&inc=picture,name,email,location,cell,noinfo,dob')
     .then(checkStatus)
@@ -66,11 +68,11 @@ fetch('https://randomuser.me/api/?results=12&nat=us&inc=picture,name,email,locat
         people = (json.results)
         console.log(people);
 
-        createGallery();
+        createGallery(people);
 
         searchHTML();
     });
-//checking to see if the fetch didn't have any issues
+// Checking to see if the fetch didn't have any issues.
 function checkStatus(response) {
     if (response.ok) {
         return Promise.resolve(response);
@@ -79,25 +81,28 @@ function checkStatus(response) {
     }
 }
 
-//Gallery HTML
-function createGallery() {
-    for (let i = 0; i < people.length; i++) {
-        // const galleryDiv = $('#gallery');
+// Gallery HTML
+// I also input areas that I want to enter the profile info for each person.
+function createGallery(m) {
+    for (let i = 0; i < m.length; i++) {
         let galleryHTML =
         `<div class="card" index="${i}">
             <div class="card-img-container">
-                <img class="card-img" src=${people[i].picture.large} alt="profile picture">
+                <img class="card-img" src=${m[i].picture.large} alt="profile picture">
             </div>
             <div class="card-info-container">
-                <h3 id="name" class="card-name cap">${people[i].name.first} ${people[i].name.last}</h3>
-                <p class="card-text">${people[i].email}</p>
-                <p class="card-text cap">${people[i].location.city}, ${people[i].location.state}</p>
+                <h3 id="name" class="card-name cap">${m[i].name.first} ${m[i].name.last}</h3>
+                <p class="card-text">${m[i].email}</p>
+                <p class="card-text cap">${m[i].location.city}, ${m[i].location.state}</p>
             </div>
         </div>`;
 
         $('#gallery').append(galleryHTML);
     }
 
+    // This function will populate the modal with the specific person clicked on. 
+    // While the element does not have the 'card' class, keep searching by checking it's parent element.
+    // If the element does have class 'card' then return the element.
     function iterativeSearch (element) {
         while (!element.hasClass('card')) {
             element = element.parent();
@@ -105,6 +110,9 @@ function createGallery() {
         return element;
     }
     
+    // Creating a click function to open the modal and show it. 
+    // When a person is clicked, take it's index value and that will be the person you choose from the people array.
+    // Create a modal for the chosen person.
     $('.card').on('click', function (event) {
         $('.modal-container').show();
         let clicked = iterativeSearch($(event.target)).attr('index');
@@ -112,23 +120,13 @@ function createGallery() {
         let chosenPerson = people[clicked];
         createModal(chosenPerson, Number(clicked));
         // console.log(chosenPerson);
-
     });
 
 }
 
-
-
-// function recursiveSearch (element) {
-//     if (element.hasClass('card')) {
-//         return element;
-//     } else {
-//         return recursiveSearch(element.parent());
-//     }
-// }
-
-
-//Modal HTML
+// Modal HTML
+// Create the modal.
+// I also inputted areas that I want to enter the profile info for each person.
 function createModal(person, index) {
     let options = { date: 'short' };
     let modalHTML = 
@@ -153,11 +151,14 @@ function createModal(person, index) {
     $('.modal-container').remove();
     $('body').append(modalHTML);
 
-//close modal
+// Close modal
+// When you click the "X" it will close the modal.
     $('#modal-close-btn').on('click', function () {
         $('.modal-container').hide();
     });
 
+// Previous modal
+// When you click the "PREV" it will take you to the previous person's modal.
     $('#modal-prev').on('click', function () {
         let prev;
         if (index == 0) {
@@ -169,6 +170,8 @@ function createModal(person, index) {
         createModal(chosenPerson, prev);
     });
 
+// Next modal
+// When you click the "NEXT" it will take you to the next person's modal.
     $('#modal-next').on('click', function () {
         let next;
         if (index == people.length - 1) {
@@ -181,109 +184,24 @@ function createModal(person, index) {
     });
 }
 
+// I created a search button to search for a specific person.
+// The search button will hide all the cards and only show the person you searched for by filtering through the array. If it's blank, it will show you the gallery.
 function searchHTML() {
     let searchHTML =
         `<form action="#" method="get">
         <input type="search" id="search-input" class="search-input" placeholder="Search...">
         <input type="submit" value="&#x1F50D;" id="search-submit" class="search-submit">
         </form>`;
+        $('.search-container').append(searchHTML);
+
+        $('#search-submit').on('click', function () {
+            $('.card').hide();
+            let searchQuery = $('.search-input').val().toLowerCase();
+            let searchedName = people.filter(m => m.name.first.includes(searchQuery) || m.name.last.includes(searchQuery));
+            if(searchQuery == ""){            
+                createGallery(people);
+            } else {
+                createGallery(searchedName);
+            } 
+        });
     }
-    // $('.search-container').append(searchHTML);
-
-    // $('#search-submit').on('submit', function () {
-    //     // Declare variables
-    //     let input = $('#search-input').val();
-    //     input.toUpperCase();
-
-    //     checkLetter(letter) {
-    //         return people.indexOf(letter) >= 0;
-    //     }
-
-    //    if (people.checkLetter(input)) {
-
-    //    } else {
-
-    //    }
-        // let filterPeople = people.filter(person => person !== input);
-        // if (filterPeople) {
-        //     console.log('error');
-        // } else {
-        //     $('.card')[i].show();
-        // }
-            // {
-            // if (person.name.first == input || person.name.last == input) {
-            //     return true;
-            // } else {
-            //     return false;
-        // }
-//     });
-// // });
-
-
-// function getJSON(apiData) {
-//     const xhr = new XMLHttpRequest();
-//     xhr.open('GET', apiData);
-//     xhr.onload = () => {
-//       if(xhr.status === 200) {
-//         let data = JSON.parse(xhr.responseText);
-//         console.log(data);
-//       }
-//     };
-//     xhr.send();
-//   }
-
-// getJSON(apiData);
-
-//   function getProfiles(json) {
-//       const profiles = json.people.map(person => {
-//             return fetch(apiData)
-//                 .then(response =>response.json())
-//       });
-//       return Promise.all(profiles);
-//   }
-// $('#gallery').append('<div class="card">');
-// $('.card').append('<div class="card-img-container">');
-// $('.card-img-container').append('<img class="card-img" src="https://placehold.it/90x90" alt="profile picture">');
-// // $(`</div>`);
-
-// $('.card').append('<div class="card-info-container">');
-// $('.card-info-container').append('<h3 id="name" class="card-name cap">first last</h3>');
-// $('.card-info-container').append('<p class="card-text">email</p>');
-// $('.card-info-container').append('<p class="card-text cap">city, state</p>');
-// // $(`</div>`);
-
-
-//   // Generate the markup for each profile
-//   function generateHTML(data) {
-//     const section = document.createElement('section');
-//     peopleList.appendChild(section);
-//     section.innerHTML = `
-//       <img src=${data.thumbnail.source}>
-//       <h2>${data.title}</h2>
-//       <p>${data.description}</p>
-//       <p>${data.extract}</p>
-//     `;
-//   }
-
-// btn.on('click', () => getJSON(apiData));
-// $.ajax({
-//     url: 'https://randomuser.me/api/?results=12&?inc=picture,name,email,location,cell,noinfo,dob',
-//     dataType: 'json',
-//     success: function(data) {
-//       console.log(data);
-//     }
-//   });
-// function getJSON (url) {
-//     const xhr = XMLHttpRequest();
-//     xhr.open('GET', url);
-//     xhr.onreadystatechange = function () {
-//         if (xhr.readyState === 4 && xhr.status === 200) {
-//             let data = JSON.parse(xhr.responseText);
-//             data.map(p => console.log(p));
-//         }
-//     }
-//     xhr.send();
-// }
-
-// getJSON();
-// alert('welcome to page!');
